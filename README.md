@@ -54,16 +54,23 @@ SELECT * FROM traces;
 
 # Sample Inputs
 File Name              	 Type	           Intent	Notes
+
 sample_invoice.pdf	      PDF	            Invoice	Total > ₹10,000, mentions GDPR
+
 mail.txt	                Email	          Complaint	Angry tone, high urgency
+
 payload.json	            JSON	           RFQ	Missing required field (flags anomaly)
 
 # Example Console Output
 
 [Classifier] Format: PDF | Intent: Invoice
+
 [PDF Agent] Extracted total: ₹12,500.00
+
 [PDF Agent] Found keywords: ['GDPR']
+
 [Action Router] Triggered: POST /risk_alert
+
 [Memory] Trace saved to memory.db
 
 # Diagram of Agent Flow and Chaining 
@@ -89,21 +96,122 @@ payload.json	            JSON	           RFQ	Missing required field (flags anoma
    │     ├── Extract invoice total or regulation terms
    
    │     └── Flag if >10,000 or GDPR/FDA mentioned
+   
    └── JSON Agent
+   
          ├── Parse and validate schema
+         
          └── Log alert if anomalies found
 
 🧠 Shared Memory
+
    ├── Stores input metadata
+   
    ├── Agent outputs and actions
+   
    └── Decision trace
 
 🔁 Action Router
+
    ├── Based on agent outputs:
+   
    │     ├── POST /crm for escalation
+   
    │     ├── POST /risk_alert for fraud/regulations
+   
    │     └── Log for routine cases
+   
 
 ✅ Final Output
+
    └── Stored + Action Logged
 
+# Agent Logic Overview
+
+This system uses a modular, multi-agent architecture where each agent handles a specific format and performs intelligent extraction, validation, and action chaining. Below is a breakdown of each agent and its responsibilities.
+
+1. Classifier Agent
+2. 
+Role: Identifies the file format and business intent.
+
+Format Classification: Based on file extension (.pdf, .json, .txt, .eml).
+
+Intent Detection: Uses keyword matching to classify as:
+
+Invoice, Complaint, RFQ, Regulation, or Fraud Risk.
+
+Output: Passes classification metadata to memory for routing.
+
+2. Email Agent
+
+Role: Processes plain-text emails or .eml files.
+
+Extracted Fields:
+
+Sender, Urgency, Request Type, Tone.
+
+Tone Analysis: Detects sentiment (e.g., polite, angry, threatening).
+
+Chained Actions:
+
+If tone is angry/threatening → simulate escalation via POST /crm.
+
+If routine → log and close in memory.
+
+3. JSON Agent
+
+Role: Validates incoming JSON data (e.g., webhook payloads).
+
+Schema Checks: Ensures required fields and correct data types.
+
+Anomaly Detection:
+
+Flags missing or mismatched fields.
+
+Chained Actions:
+
+On error → log alert in memory or trigger POST /risk_alert.
+
+4. PDF Agent
+
+Role: Analyzes invoices or policy PDFs using text-extraction.
+
+Field Extraction:
+
+Extracts invoice total using regex.
+
+Scans for compliance terms (GDPR, FDA, etc.).
+
+Risk Evaluation:
+
+Flags invoices > ₹10,000.
+
+Flags presence of regulatory terms.
+
+Chained Actions:
+
+Logs risk to memory or triggers risk alert.
+
+5. Shared Memory (SQLite)
+
+Stores:
+
+Input metadata (timestamp, filename, classification).
+
+Agent outputs and extracted fields.
+
+Actions taken (e.g., escalate, alert).
+
+Use: Enables traceability, auditing, and chaining.
+
+6. Action Router
+
+Role: Makes decisions based on agent output.
+
+Simulated API Calls:
+
+POST /crm → for escalated complaints.
+
+POST /risk_alert → for flagged PDFs or schema issues.
+
+Trace: Logs all routing actions in memory for end-to-end traceability.
