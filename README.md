@@ -51,3 +51,17 @@ All extracted fields, decisions, and triggered actions are stored in memory.db.
 Use SQLite browser or CLI to view:
 sqlite3 memory.db
 SELECT * FROM traces;
+
+# Sample Inputs
+File Name              	 Type	           Intent	Notes
+sample_invoice.pdf	      PDF	            Invoice	Total > ₹10,000, mentions GDPR
+mail.txt	                Email	          Complaint	Angry tone, high urgency
+payload.json	            JSON	           RFQ	Missing required field (flags anomaly)
+
+# Example Console Output
+
+[Classifier] Format: PDF | Intent: Invoice
+[PDF Agent] Extracted total: ₹12,500.00
+[PDF Agent] Found keywords: ['GDPR']
+[Action Router] Triggered: POST /risk_alert
+[Memory] Trace saved to memory.db
