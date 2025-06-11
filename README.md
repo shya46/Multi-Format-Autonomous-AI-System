@@ -131,7 +131,7 @@ payload.json	            JSON	           RFQ	Missing required field (flags anoma
 This system uses a modular, multi-agent architecture where each agent handles a specific format and performs intelligent extraction, validation, and action chaining. Below is a breakdown of each agent and its responsibilities.
 
 1. Classifier Agent
-2. 
+
 Role: Identifies the file format and business intent.
 
 Format Classification: Based on file extension (.pdf, .json, .txt, .eml).
