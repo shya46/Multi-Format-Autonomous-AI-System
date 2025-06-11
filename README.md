@@ -65,3 +65,41 @@ payload.json	            JSON	           RFQ	Missing required field (flags anoma
 [PDF Agent] Found keywords: ['GDPR']
 [Action Router] Triggered: POST /risk_alert
 [Memory] Trace saved to memory.db
+
+# Diagram of Agent Flow and Chaining 
+                  ┌──────────────────────────────┐
+                 │     User Uploads Input       │
+                 └────────────┬─────────────────┘
+                              │
+                              ▼
+                 ┌──────────────────────────────┐
+                 │    Classifier Agent          │
+                 │ - Detect Format (PDF/JSON/Email)
+                 │ - Detect Intent (Invoice, RFQ…) │
+                 └────────────┬─────────────────┘
+                              │
+                              ▼
+              ┌───────────────┼────────────────────────┐
+              ▼               ▼                        ▼
+     ┌───────────────┐ ┌───────────────┐       ┌────────────────┐
+     │   Email Agent │ │   JSON Agent  │       │   PDF Agent    │
+     └──────┬────────┘ └──────┬────────┘       └──────┬─────────┘
+            │                 │                         │
+            ▼                 ▼                         ▼
+ ┌────────────────┐ ┌─────────────────────┐ ┌────────────────────────────┐
+ │ Extract Sender │ │ Validate JSON Schema│ │ Extract Total & Keywords   │
+ │ Urgency + Tone │ │ Flag Anomalies      │ │ Flag High-Risk Invoice     │
+ └──────┬─────────┘ └────────────┬────────┘ └────────────┬───────────────┘
+        │                        │                         │
+        ▼                        ▼                         ▼
+ ┌────────────────┐     ┌────────────────────┐    ┌────────────────────┐
+ │  Action Router │◄────┴─────┬──────────────┴────► Trigger Actions    │
+ │ - Escalate     │          │                    │ - Risk Log / CRM   │
+ │ - Alert        │          │                    └────────────────────┘
+ │ - Log Close    │          │
+ └──────┬─────────┘          ▼
+        ▼          ┌──────────────────────────────┐
+       Logs ◄──────┤ Shared Memory Store (SQLite) │
+                   │  - Metadata + Traces         │
+                   │  - Agent Outputs + Actions   │
+                   └──────────────────────────────┘
