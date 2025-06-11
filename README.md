@@ -69,16 +69,25 @@ payload.json	            JSON	           RFQ	Missing required field (flags anoma
 # Diagram of Agent Flow and Chaining 
 
 📥 INPUT RECEIVED
+
    └──> Classifier Agent
+   
          ├── Detects Format: [Email | PDF | JSON]
+         
          └── Detects Intent: [Invoice | Complaint | RFQ | Regulation | Fraud Risk]
 
 ➡ Routed to Specialized Agent
+
    ├── Email Agent
+   
    │     ├── Extract sender, urgency, tone
+   
    │     └── Escalate or log based on tone + urgency
+   
    ├── PDF Agent
+   
    │     ├── Extract invoice total or regulation terms
+   
    │     └── Flag if >10,000 or GDPR/FDA mentioned
    └── JSON Agent
          ├── Parse and validate schema
